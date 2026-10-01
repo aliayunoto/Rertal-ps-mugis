@@ -496,7 +496,7 @@ function updateCostPreview() {
 }
 
 // ── Start Session ─────────────────────────────────────────────
-function startSession() {
+async function startSession() {
   if (!activeModalUnit) return;
   if (
     selectedMode === "package" &&
@@ -508,6 +508,33 @@ function startSession() {
 
   const uid = activeModalUnit.id;
   const consoleType = activeModalUnit.type || "PS3";
+
+  // Tambahkan penjadwalan alarm native Capacitor di sini
+  if (selectedMode === "package" && selectedDuration > 0) {
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins.LocalNotifications) {
+        const LocalNotifications = window.Capacitor.Plugins.LocalNotifications;
+        await LocalNotifications.requestPermissions();
+
+        const durasiMilidetik = selectedDuration * 60 * 60 * 1000;
+        const waktuSelesaiTarget = new Date().getTime() + durasiMilidetik;
+
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "Waktu Habis ⏰",
+              body: `Rental untuk ${activeModalUnit.name} telah selesai.`,
+              id: new Date().getTime(),
+              schedule: { at: new Date(waktuSelesaiTarget) },
+              sound: null,
+            },
+          ],
+        });
+      }
+    } catch (e) {
+      console.info("Alarm lokal gagal dipasang", e);
+    }
+  }
 
   const session = {
     mode: selectedMode,
