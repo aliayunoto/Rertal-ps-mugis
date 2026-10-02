@@ -519,12 +519,17 @@ async function startSession() {
         const durasiMilidetik = selectedDuration * 60 * 60 * 1000;
         const waktuSelesaiTarget = new Date().getTime() + durasiMilidetik;
 
+        // PERBAIKAN: Buat ID unik berdasarkan angka unit (misal: "tv1" jadi 1) + timestamp detik
+        const unitNumber = parseInt(uid.replace(/\D/g, "")) || 1;
+        const notificationId =
+          unitNumber * 100000 + (Math.floor(Date.now() / 1000) % 10000);
+
         await LocalNotifications.schedule({
           notifications: [
             {
               title: "Waktu Habis ⏰",
               body: `Rental untuk ${activeModalUnit.name} telah selesai.`,
-              id: new Date().getTime(),
+              id: notificationId, // Menggunakan ID yang aman dari bentrok
               schedule: { at: new Date(waktuSelesaiTarget) },
               sound: null,
             },
